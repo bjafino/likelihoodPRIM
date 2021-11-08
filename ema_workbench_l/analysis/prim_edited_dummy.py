@@ -883,7 +883,7 @@ class Prim(sdutil.OutputFormatterMixin):
 
     message = "{0} points remaining, containing {1} cases of interest"
 
-    def __init__(self, x, y, threshold, weight,
+    def __init__(self, x, y, threshold,
                  obj_function=PRIMObjectiveFunctions.LENIENT1,
                  peel_alpha=0.05, paste_alpha=0.05, mass_min=0.05,
                  threshold_type=ABOVE, mode=sdutil.RuleInductionType.BINARY,
@@ -930,7 +930,6 @@ class Prim(sdutil.OutputFormatterMixin):
         self.x = x
         self.y = y
         self.mode = mode
-        self.rel_weight = weight
 
         self._update_yi_remaining = self._update_functions[update_function]
 
@@ -1062,39 +1061,6 @@ class Prim(sdutil.OutputFormatterMixin):
         '''
 
         y = self.y[indices]
-
-        if self.threshold_type == ABOVE:
-            coi = y[y >= self.threshold].shape[0]
-        elif self.threshold_type == BELOW:
-            coi = y[y <= self.threshold].shape[0]
-        else:
-            raise ValueError("threshold type is not one of ABOVE or BELOW")
-
-        return coi
-        
-    def determine_weighted_coi(self, indices):
-        '''
-        Given a set of indices on y, how many cases of interest are
-        there in this set.
-
-        Parameters
-        ----------
-        indices: ndarray
-                 a valid index for y
-
-        Returns
-        -------
-        int
-            the number of cases of interest.
-
-        Raises
-        ------
-        ValueError
-            if threshold_type is not either ABOVE or BELOW
-
-        '''
-
-        y = self.y[indices] * self.rel_weight[indices]
 
         if self.threshold_type == ABOVE:
             coi = y[y >= self.threshold].shape[0]
