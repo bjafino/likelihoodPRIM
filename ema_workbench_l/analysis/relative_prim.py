@@ -731,10 +731,21 @@ class PrimBox(object):
 
         restricted_dims = sdutil._determine_restricted_dims(self.box_lims[-1],
                                                             self.prim.box_init)
+                                                            
+        # print('update ', coi, self.prim.t_coi)
+        
+        try:
+            total_cases_in_box = np.sum(self.prim.relative_likelihood[self.yi])
+            mn = coi / total_cases_in_box #np.mean(y * self.prim.relative_likelihood[self.yi])
+        except:
+            total_cases_in_box = y.shape[0]
+            mn = np.mean(y)
+            
+        # print(len(y), y.shape[0], np.sum(y), total_cases_in_box)
 
         data = {'coverage': coi / self.prim.t_coi,
-                'density': coi / y.shape[0],
-                'mean': np.mean(y),
+                'density': coi / total_cases_in_box,
+                'mean': mn,
                 'res_dim': restricted_dims.shape[0],
                 'mass': y.shape[0] / self.prim.n,
                 'id': i}
@@ -953,6 +964,7 @@ class Prim(sdutil.OutputFormatterMixin):
 
         # how many cases of interest do we have?
         self.t_coi = self.determine_coi(self.yi)
+        print(self.t_coi)
 
         # initial box that contains all data
         self.box_init = sdutil._make_box(self.x)
@@ -1060,14 +1072,17 @@ class Prim(sdutil.OutputFormatterMixin):
         '''
 
         try:
-            y = self.y[indices] * self.relative_likelihood[indices]
+            #print(len(self.y), self.y)
+            y = np.array(self.y[indices] * self.relative_likelihood[indices])
+            #print(len(self.y), len(y), type(self.y), type(y))
         except:
             y = self.y[indices]
 
         if self.threshold_type == ABOVE:
-            coi = y[y >= self.threshold].shape[0]
+            #print(len(y), len(y[y >= self.threshold]), y[y >= self.threshold].shape[0], np.sum(y), np.sum(y[y >= self.threshold]))
+            coi = np.sum(y[y >= self.threshold])#y[y >= self.threshold].shape[0]
         elif self.threshold_type == BELOW:
-            coi = y[y <= self.threshold].shape[0]
+            coi = np.sum(y[y <= self.threshold])#y[y <= self.threshold].shape[0]
         else:
             raise ValueError("threshold type is not one of ABOVE or BELOW")
 
